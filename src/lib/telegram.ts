@@ -22,8 +22,7 @@ export const MainButton = mainButton;
 export const BackButton = backButton;
 export const Haptics = hapticFeedback;
 
-export function payWithStars(invoiceLink: string): Promise<"paid" | "cancelled" | "failed" | "pending"> {
-  return new Promise((resolve) => {
-    openInvoice(invoiceLink, (status) => resolve(status as any));
-  });
+export async function payWithStars(invoiceLink: string): Promise<string> {
+  const status = await openInvoice(invoiceLink, "url");
+  return status;
 }
