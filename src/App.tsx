@@ -51,20 +51,30 @@ export default function App() {
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [debugError, setDebugError] = useState<string | null>(null);
+  const [progress, setProgress] = useState("Initializing...");
 
   useVisibleErrorReporting(setDebugError);
 
   useEffect(() => {
+    setProgress("Applying theme...");
     applyTelegramTheme();
     (async () => {
       try {
+        setProgress("Checking session...");
         if (!getSessionToken()) {
+          setProgress("Getting init data...");
           const initData = getInitDataRaw();
+          setProgress(`Init data length: ${initData.length}`);
+          setProgress("Authenticating...");
           await authenticate(initData);
         }
+        setProgress("Ready!");
         setReady(true);
       } catch (e) {
-        setError(`${(e as Error).message}\n${(e as Error).stack ?? ""}`);
+        const msg = (e as Error).message;
+        const stack = (e as Error).stack ?? "";
+        setError(`${msg}\n${stack}`);
+        setProgress(`Auth failed: ${msg}`);
       }
     })();
   }, []);
@@ -82,10 +92,11 @@ export default function App() {
       <div className="p-6 text-center text-tg-hint">
         این صفحه فقط داخل Telegram قابل استفاده‌ست.
         <pre className="text-xs mt-2 opacity-60" style={{ whiteSpace: "pre-wrap", textAlign: "left" }}>{error}</pre>
+        <pre className="text-xs mt-2 opacity-40" style={{ whiteSpace: "pre-wrap", textAlign: "left" }}>Progress: {progress}</pre>
       </div>
     );
   }
-  if (!ready) return <div className="p-6 text-center text-tg-hint">در حال بارگذاری...</div>;
+  if (!ready) return <div className="p-6 text-center text-tg-hint">{progress}</div>;
 
   return (
     <ErrorBoundary>
